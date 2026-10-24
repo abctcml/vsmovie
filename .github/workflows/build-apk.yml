@@ -1,0 +1,32 @@
+name: Build APK
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - name: Build APK
+        run: |
+          unzip -q -o VSMovie.zip -d _src
+          bash _src/ci/build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VSMovie-apk
+          path: VSMovie.apk
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: VSMovie bản ${{ github.run_number }}
+          files: VSMovie.apk
